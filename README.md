@@ -63,3 +63,7 @@ chladni_visualizer/
 │   └── chladni_example.png # Example output
 └── README.md
 ```
+
+
+---
+*Built with AI assistance from [Claude (Anthropic)](https://claude.com/).*
