@@ -4,15 +4,17 @@
 
 | File | Purpose |
 |------|---------|
-| `main.py` | Entry point with CLI argument parsing |
+| `main.py` | Entry point: `parse_args()`, `build_simulator()` (--mode, --particles, --width, --height) |
 | `simulator.py` | `ChladniSimulator` class -- Pygame loop, rendering, input |
+| `view3d.py` | `View3DMixin` -- 3-D projection (`project_3d`), `draw_3d_background`, `_draw_particles_3d` (split from simulator.py) |
 | `particle.py` | `Particle` class -- single sand grain physics |
 | `pattern_generator.py` | `PatternGenerator` class -- static methods for each vibration mode |
-| `presets.py` | Pygame-free presets: `PATTERN_PRESETS` (keys Q-O), `FREQUENCY_PRESETS` (keys 1-0), `SIZE_DISTRIBUTIONS`, `DISPLAY_MODES`, `pattern_function()`, `amplitude_map()` (body of `calculate_pattern`) |
+| `presets.py` | Pygame-free presets: `PATTERN_PRESETS` (keys Q-O), `FREQUENCY_PRESETS` (keys 1-0), `PATTERN_SLUGS`, `SIZE_DISTRIBUTIONS`, `DISPLAY_MODES`, `pattern_function()`, `amplitude_map()` (body of `calculate_pattern`) |
 | `constants.py` | All physics and display constants (no magic numbers) |
 | `chladni_visualizer.py` | Original monolithic file (kept for reference) |
 | `test_pattern_generator.py` | Tests for amplitude-map calculations |
 | `test_particle.py` | Tests for particle physics |
+| `test_main.py` | CLI tests (--mode, --particles, Shift keys); headless Pygame |
 | `run_web.py` | Starts the web app (uvicorn, http://127.0.0.1:8102) |
 | `requirements-web.txt` | Pinned web/test dependencies |
 
@@ -43,13 +45,15 @@
 
 - **`Particle`** (`particle.py`): Represents a sand grain. Methods: `update()`, `_sample_amplitude()`, `_compute_forces()`, `_integrate()`, `_enforce_bounds()`.
 - **`PatternGenerator`** (`pattern_generator.py`): Static methods for each pattern family: `classic_rectangular`, `circular_modes`, `interference_pattern`, `radial_symmetric`, `spiral_pattern`, `diamond_pattern`, `flower_pattern`, `wave_interference`, `complex_superposition`.
-- **`ChladniSimulator`** (`simulator.py`): Owns the Pygame window, particle list, and main loop. Methods: `run()`, `handle_events()`, `calculate_pattern()`, `draw_*()`, `init_particles()`.
+- **`ChladniSimulator`** (`simulator.py`): Owns the Pygame window, particle list, and main loop. Methods: `run()`, `handle_events()`, `set_pattern()`, `calculate_pattern()`, `draw_*()`, `init_particles()`.
 
 ## Module Connections
 
 ```
 main.py
+  -> presets.py (PATTERN_SLUGS for --mode)
   -> simulator.py (ChladniSimulator)
+       -> view3d.py (View3DMixin)
        -> particle.py (Particle)
        -> presets.py (presets, amplitude_map) -> pattern_generator.py (PatternGenerator)
        -> constants.py (all tunable parameters)

@@ -8,11 +8,13 @@ Supports command-line arguments for initial configuration.
 
 import argparse
 
-from constants import DEFAULT_HEIGHT, DEFAULT_NUM_PARTICLES, DEFAULT_WIDTH
-from simulator import ChladniSimulator
+from constants import (
+    DEFAULT_HEIGHT, DEFAULT_NUM_PARTICLES, DEFAULT_WIDTH, MAX_PARTICLES, MIN_PARTICLES,
+)
+from presets import PATTERN_SLUGS
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description="Interactive Chladni plate vibration pattern visualizer"
     )
@@ -30,24 +32,26 @@ def parse_args():
     )
     parser.add_argument(
         "--mode", type=str, default="classic",
-        choices=[
-            "classic", "circular", "interference", "radial",
-            "spiral", "diamond", "flower", "wave", "superposition",
-        ],
+        choices=PATTERN_SLUGS,
         help="Initial pattern mode (default: classic)"
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main():
-    args = parse_args()
-    sim = ChladniSimulator(width=args.width, height=args.height)
-
-    if args.particles != DEFAULT_NUM_PARTICLES:
-        sim.num_particles = args.particles
-        sim.init_particles()
-
+    sim = build_simulator(parse_args())
     sim.run()
+
+
+def build_simulator(args):
+    """Create the simulator configured from parsed command-line arguments."""
+    from simulator import ChladniSimulator  # imports pygame
+
+    sim = ChladniSimulator(width=args.width, height=args.height, pattern=args.mode)
+    if args.particles != DEFAULT_NUM_PARTICLES:
+        sim.num_particles = max(MIN_PARTICLES, min(MAX_PARTICLES, args.particles))
+        sim.init_particles()
+    return sim
 
 
 if __name__ == "__main__":

@@ -33,19 +33,30 @@ pip install pygame numpy
 ## Usage
 
 ```bash
-python chladni_visualizer.py
+python main.py                                  # classic rectangular pattern
+python main.py --mode flower --particles 5000   # start on another pattern
 ```
+
+`--mode` is one of classic, circular, interference, radial, spiral, diamond, flower, wave, superposition;
+`--width`/`--height` set the window size. (`chladni_visualizer.py` is the original single-file version.)
 
 ### Controls
 
 | Key | Action |
 |-----|--------|
-| Left/Right arrows | Change X mode number |
-| Up/Down arrows | Change Y mode number |
-| +/- | Adjust frequency |
-| Space | Toggle simulation |
-| R | Reset particles |
-| T | Cycle pattern type |
+| Q W E R T Y U I O | Pattern presets (classic ... superposition) |
+| 1 2 4 5 6 7 8 9 0 | Frequency presets / musical notes (A3 ... D5) |
+| V | Cycle view: both / particles only / pattern only |
+| 3 | Toggle 3D mode |
+| C | Cycle 3D camera views; Left/Right: perspective angle; Page Up/Down: zoom |
+| [ ] | Fewer / more particles (up to 20,000) |
+| Shift + - / Shift + = | Particle size range |
+| D | Cycle particle size distribution |
+| + / - | Speed (Up/Down arrows: fine speed) |
+| Space | Reset particles |
+| Esc | Quit |
+
+Key 3 toggles 3D mode, so the D4 (293.7 Hz) frequency preset bound to it cannot be reached from the keyboard.
 
 ## How It Works
 

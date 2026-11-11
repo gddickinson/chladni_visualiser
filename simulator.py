@@ -8,7 +8,7 @@ processes user input.
 
 import math
 import random
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 import pygame
@@ -36,7 +36,7 @@ from constants import (
     WHITE,
 )
 from particle import Particle
-from pattern_generator import PatternGenerator
+from view3d import View3DMixin
 from presets import (
     DISPLAY_MODES,
     FREQUENCY_PRESETS,
@@ -47,10 +47,11 @@ from presets import (
 )
 
 
-class ChladniSimulator:
+class ChladniSimulator(View3DMixin):
     """Main simulation driver: rendering, input, and game loop."""
 
-    def __init__(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT):
+    def __init__(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT,
+                 pattern: str = "classic"):
         pygame.init()
         self.width = width
         self.height = height
@@ -90,11 +91,8 @@ class ChladniSimulator:
 
         # Pattern parameters
         self.frequency = DEFAULT_FREQUENCY
-        self.mode_x = 3
-        self.mode_y = 2
         self.plate_size = 1.0
-        self.current_pattern_func = PatternGenerator.classic_rectangular
-        self.current_pattern_name = "Classic Rectangular"
+        self.set_pattern(pattern)  # pattern name, function and preset mode numbers
 
         # Initialize particles
         self.init_particles()
@@ -140,6 +138,16 @@ class ChladniSimulator:
         print("Arrow Up/Down - Fine speed adjustment")
         print("\nOther Controls:")
         print("SPACE - Reset particles    ESC - Quit")
+
+    def set_pattern(self, slug: str):
+        """Select a pattern preset by its slug (main.py --mode choices, e.g. "flower")."""
+        for _key, preset_slug, name, method, mx, my in PATTERN_PRESETS:
+            if preset_slug == slug:
+                self.current_pattern_name = name
+                self.current_pattern_func = pattern_function(method)
+                self.mode_x, self.mode_y = mx, my
+                return
+        raise ValueError(f"unknown pattern {slug!r}")
 
     def init_particles(self):
         """Initialize particles with the current count and size distribution."""
@@ -193,91 +201,6 @@ class ChladniSimulator:
                 rect_size = max(2, self.width // pattern.shape[1] + 1)
                 pygame.draw.rect(self.screen, color, (x, y, rect_size, rect_size))
 
-    def project_3d(self, x: float, y: float, z: float) -> Tuple[int, int, float]:
-        """Project 3-D coordinates to 2-D screen with perspective."""
-        cx = x - self.width / 2
-        cy = y - self.height / 2
-        effective_camera_height = self.camera_height / self.zoom_factor
-
-        if self.camera_view == "top":
-            screen_x = int(cx * self.zoom_factor + self.width / 2)
-            screen_y = int(cy * self.zoom_factor + self.height / 2)
-            depth = z
-        elif self.camera_view == "north":
-            screen_x = int(cx * self.zoom_factor + self.width / 2)
-            screen_y = int((effective_camera_height - z - cy * 0.1) * self.zoom_factor + self.height / 2)
-            depth = cy
-        elif self.camera_view == "south":
-            screen_x = int(-cx * self.zoom_factor + self.width / 2)
-            screen_y = int((effective_camera_height - z + cy * 0.1) * self.zoom_factor + self.height / 2)
-            depth = -cy
-        elif self.camera_view == "east":
-            screen_x = int(cy * self.zoom_factor + self.width / 2)
-            screen_y = int((effective_camera_height - z - cx * 0.1) * self.zoom_factor + self.height / 2)
-            depth = cx
-        elif self.camera_view == "west":
-            screen_x = int(-cy * self.zoom_factor + self.width / 2)
-            screen_y = int((effective_camera_height - z + cx * 0.1) * self.zoom_factor + self.height / 2)
-            depth = -cx
-        else:  # perspective
-            angle_rad = math.radians(self.camera_angle)
-            cos_a = math.cos(angle_rad)
-            sin_a = math.sin(angle_rad)
-            new_y = cy * cos_a - z * sin_a
-            new_z = cy * sin_a + z * cos_a + effective_camera_height
-            if new_z > 1:
-                perspective_scale = effective_camera_height / new_z * self.zoom_factor
-                screen_x = int(cx * perspective_scale + self.width / 2)
-                screen_y = int(new_y * perspective_scale + self.height / 2)
-                depth = new_z
-            else:
-                screen_x = int(x)
-                screen_y = int(y)
-                depth = effective_camera_height
-        return screen_x, screen_y, depth
-
-    def draw_3d_background(self, pattern: np.ndarray):
-        """Draw 3-D background grid for different view modes."""
-        if self.camera_view == "top":
-            for i in range(0, pattern.shape[0], 2):
-                for j in range(0, pattern.shape[1], 2):
-                    x = int((j / pattern.shape[1]) * self.width)
-                    y = int((i / pattern.shape[0]) * self.height)
-                    amplitude = pattern[i, j]
-                    intensity = int(amplitude * 60 + 190)
-                    intensity = max(190, min(255, intensity))
-                    if amplitude < 0.3:
-                        color = (intensity - 10, intensity - 5, intensity)
-                    else:
-                        color = (intensity, intensity - 20, intensity - 40)
-                    screen_x, screen_y, _ = self.project_3d(x, y, 0)
-                    if 0 <= screen_x < self.width and 0 <= screen_y < self.height:
-                        rect_size = max(1, int(8 * self.zoom_factor))
-                        pygame.draw.rect(self.screen, color,
-                                         (screen_x, screen_y, rect_size, rect_size))
-        else:
-            grid_spacing = max(20, int(40 / self.zoom_factor))
-            for i in range(0, self.width, grid_spacing):
-                for j in range(0, self.height, grid_spacing):
-                    grid_x = int((i / self.width) * pattern.shape[1])
-                    grid_y = int((j / self.height) * pattern.shape[0])
-                    grid_x = max(0, min(pattern.shape[1] - 1, grid_x))
-                    grid_y = max(0, min(pattern.shape[0] - 1, grid_y))
-                    amplitude = pattern[grid_y, grid_x]
-                    height = amplitude * 50 * self.zoom_factor
-                    x1, y1, z1 = self.project_3d(i, j, 0)
-                    x2, y2, z2 = self.project_3d(i, j, height)
-                    intensity = int(amplitude * 100 + 150)
-                    intensity = max(150, min(255, intensity))
-                    color = (intensity - 20, intensity - 10, intensity)
-                    if (0 <= x1 < self.width and 0 <= y1 < self.height
-                            and 0 <= x2 < self.width and 0 <= y2 < self.height):
-                        if height > 2:
-                            pygame.draw.line(self.screen, color, (x1, y1), (x2, y2),
-                                             max(1, int(2 * self.zoom_factor)))
-                            pygame.draw.circle(self.screen, color, (x2, y2),
-                                               max(1, int(3 * self.zoom_factor)))
-
     # ------------------------------------------------------------------
     # Particle rendering
     # ------------------------------------------------------------------
@@ -292,43 +215,6 @@ class ChladniSimulator:
             self._draw_particles_3d()
         else:
             self._draw_particles_2d()
-
-    def _draw_particles_3d(self):
-        particles_with_depth = []
-        for p in self.particles:
-            _, _, depth = self.project_3d(p.x, p.y, p.z)
-            particles_with_depth.append((p, depth))
-        particles_with_depth.sort(key=lambda item: item[1], reverse=True)
-
-        for p, depth in particles_with_depth:
-            screen_x, screen_y, z_dist = self.project_3d(p.x, p.y, p.z)
-            if not (0 <= screen_x < self.width and 0 <= screen_y < self.height):
-                continue
-            depth_scale = self.camera_height / max(z_dist, 10)
-            height_factor = 1 + p.z / 50
-            size = int(p.size * depth_scale * height_factor)
-            size = max(1, min(20, size))
-
-            if p.settled and p.z < 5:
-                shadow_offset = int(size * 0.3)
-                pygame.draw.circle(self.screen, (100, 100, 100),
-                                   (screen_x + shadow_offset, screen_y + shadow_offset), size)
-                color = BLACK
-            else:
-                speed = math.sqrt(p.vx ** 2 + p.vy ** 2 + p.vz ** 2)
-                height_intensity = min(255, int(p.z * 3 + 50))
-                if speed > 50:
-                    red = min(255, int(speed * 2 + height_intensity))
-                    color = (red, height_intensity // 2, height_intensity // 3)
-                else:
-                    gray = max(30, min(150, int(height_intensity)))
-                    color = (gray, gray, gray)
-
-            if p.z > 20:
-                glow = pygame.Surface((size * 4, size * 4), pygame.SRCALPHA)
-                pygame.draw.circle(glow, (*color, 40), (size * 2, size * 2), size * 2)
-                self.screen.blit(glow, (screen_x - size * 2, screen_y - size * 2))
-            pygame.draw.circle(self.screen, color, (screen_x, screen_y), size)
 
     def _draw_particles_2d(self):
         for p in self.particles:
@@ -415,7 +301,6 @@ class ChladniSimulator:
     # ------------------------------------------------------------------
 
     def handle_events(self) -> bool:
-        keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
@@ -423,6 +308,7 @@ class ChladniSimulator:
                 continue
 
             key = event.key
+            shift = bool(event.mod & pygame.KMOD_SHIFT)  # either Shift key
 
             if key == pygame.K_ESCAPE:
                 return False
@@ -454,11 +340,11 @@ class ChladniSimulator:
                 inc = 1000 if self.num_particles > 5000 else 250
                 self.num_particles = min(self.max_particles, self.num_particles + inc)
                 self.init_particles()
-            elif key in (pygame.K_PLUS, pygame.K_EQUALS) and keys[pygame.K_LSHIFT]:
+            elif key in (pygame.K_PLUS, pygame.K_EQUALS) and shift:
                 self.particle_size_min = min(5.0, self.particle_size_min + 0.2)
                 self.particle_size_max = min(6.0, self.particle_size_max + 0.2)
                 self.init_particles()
-            elif key in (pygame.K_MINUS, pygame.K_UNDERSCORE) and keys[pygame.K_LSHIFT]:
+            elif key in (pygame.K_MINUS, pygame.K_UNDERSCORE) and shift:
                 self.particle_size_min = max(0.5, self.particle_size_min - 0.2)
                 self.particle_size_max = max(1.0, self.particle_size_max - 0.2)
                 self.init_particles()
@@ -475,9 +361,9 @@ class ChladniSimulator:
                 self.mode_y = my
             elif key in self.frequency_presets:
                 self.frequency = self.frequency_presets[key]
-            elif key in (pygame.K_PLUS, pygame.K_EQUALS) and not keys[pygame.K_LSHIFT]:
+            elif key in (pygame.K_PLUS, pygame.K_EQUALS) and not shift:
                 self.speed_multiplier = min(self.max_speed, self.speed_multiplier + 0.5)
-            elif key in (pygame.K_MINUS, pygame.K_UNDERSCORE) and not keys[pygame.K_LSHIFT]:
+            elif key in (pygame.K_MINUS, pygame.K_UNDERSCORE) and not shift:
                 self.speed_multiplier = max(self.min_speed, self.speed_multiplier - 0.5)
             elif key == pygame.K_UP and (not self.mode_3d or self.camera_view != "perspective"):
                 self.speed_multiplier = min(self.max_speed, self.speed_multiplier + 0.1)

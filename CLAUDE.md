@@ -10,7 +10,7 @@ python main.py
 
 ## Testing
 ```bash
-python -m pytest test_pattern_generator.py test_particle.py -v
+python -m pytest test_pattern_generator.py test_particle.py test_main.py -v   # test_main needs pygame (headless)
 python -m pytest -q tests/test_web.py      # web app + JS engine (needs node)
 ```
 

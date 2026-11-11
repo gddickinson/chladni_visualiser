@@ -27,6 +27,8 @@ PATTERN_PRESETS = [
     ("o", "superposition", "Complex Superposition", "complex_superposition", 3, 4),
 ]
 
+PATTERN_SLUGS = [slug for _key, slug, *_rest in PATTERN_PRESETS]
+
 # (key, frequency in Hz, musical note)
 FREQUENCY_PRESETS = [
     ("1", 220.0, "A3"),
