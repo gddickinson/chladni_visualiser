@@ -54,15 +54,53 @@ The simulator creates an amplitude map for the selected Chladni mode pattern, th
 - Settle via damping forces in low-amplitude (nodal) regions
 - Naturally accumulate along the nodal lines, revealing the pattern
 
+## Web version
+
+The simulator also runs in the browser. `web/static/chladni_engine.js` is a JavaScript port of `pattern_generator.py`
+(all nine pattern families), the amplitude map and `particle.py`, tested against numbers computed by the Python code.
+The static site (GitHub Pages) is the full working visualiser; the local web app adds a Python API that serves the
+presets and constants and computes pattern grids with the real NumPy generator for cross-checking.
+
+| Home | Visualiser |
+|---|---|
+| ![Home page](docs/img/home.png) | ![Visualiser: sand on the classic rectangular mode](docs/img/plate.png) |
+| **Gallery** | **Cross-check (browser vs Python)** |
+| ![Gallery of the nine pattern families](docs/img/gallery.png) | ![Cross-check table](docs/img/check.png) |
+
+Pages: Visualiser (pattern family, mode numbers, frequency and note presets, speed, time-lapse, up to 20,000 grains,
+grain-size distribution, view mode and the desktop key bindings), Gallery, Mode table, Cross-check, About.
+Not ported: the desktop 3D view (camera views, zoom, perspective).
+
+### Run the web app
+
+```bash
+pip install -r requirements-web.txt
+python run_web.py                       # http://127.0.0.1:8102
+python -m pytest -q tests/test_web.py   # API, static build, JS engine (node) tests
+python scripts/build_static.py          # static site in site/ (published by .github/workflows/pages.yml)
+```
+
+The node test alone: `node web/static/chladni_engine.test.mjs`. If the Python pattern or particle code changes,
+refresh its reference numbers with `python scripts/engine_fixture.py --write` (`tests/test_web.py` fails until you do).
+
 ## Project Structure
 
 ```
 chladni_visualizer/
-├── chladni_visualizer.py   # Main application (Particle, PatternGenerator, ChladniSimulator)
-├── examples/
-│   └── chladni_example.png # Example output
-└── README.md
+├── main.py                 # Desktop entry point (CLI arguments)
+├── simulator.py            # ChladniSimulator: Pygame window, rendering, input
+├── particle.py             # Particle: sand-grain physics
+├── pattern_generator.py    # PatternGenerator: the nine pattern families
+├── presets.py              # Pattern / frequency presets and amplitude_map (shared with the web app)
+├── constants.py            # Physics and display constants
+├── chladni_visualizer.py   # Original single-file version (kept for reference)
+├── web/                    # Web app (FastAPI) and browser front end
+├── scripts/                # Static-site build, screenshots, JS test fixture
+├── tests/test_web.py       # Web tests
+└── examples/chladni_example.png
 ```
+
+See `INTERFACE.md` for details.
 
 
 ---

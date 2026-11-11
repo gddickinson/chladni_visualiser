@@ -1,0 +1,28 @@
+/* Chladni Visualizer: sand-gold accent on the shared neon theme, plus page styles. */
+:root { --accent:#ffc857; --accent2:#ff5fa2; --accent3:#62c6ff; --glow:rgba(255,200,87,.14); }
+button, .btn, .seg button.on { color:#1a1203; }
+.mark { border-radius:3px; }
+main:focus-visible { outline:none; } /* the router focuses #app; the kit's :focus-visible rule would outline it */
+.heroplate { align-items:center; }
+.fig { margin:0; } .fig canvas, .sim .view canvas { width:100%; height:auto; display:block; background:#07060d; border:1px solid var(--line); border-radius:6px; }
+.fig figcaption { margin-top:6px; }
+.door b { color:var(--accent); }
+/* simulator layout: controls left, plate right */
+.sim { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; margin-top:14px; }
+.sim .controls { background:rgba(11,12,26,.92); border:1px solid var(--line); border-radius:6px; padding:10px 16px 16px; position:sticky; top:84px; }
+.sim .controls select { margin-bottom:2px; }
+.seg button { padding:6px 9px; font-size:12px; }
+.readout { font:13px var(--mono); background:rgba(3,5,10,.9); border:1px solid var(--line); border-radius:4px; padding:10px 12px; margin-top:12px; }
+.readout div { display:flex; justify-content:space-between; gap:10px; } .readout b { color:var(--accent); }
+#plate:focus-visible { outline:2px solid var(--accent3); }
+.keys { margin:8px 0; } kbd { font:12px var(--mono); border:1px solid var(--line); border-bottom-width:2px; border-radius:3px; padding:0 5px; color:var(--ink); }
+/* gallery and tables */
+.gal canvas { width:100%; height:auto; aspect-ratio:1; display:block; border-radius:4px; margin-bottom:8px; background:#07060d; }
+.ctlrow { margin-bottom:14px; } .ctlrow > * { flex:0 1 auto; }
+table.modes { width:auto; } table.modes td { padding:3px; } table.modes canvas { width:104px; height:104px; display:block; border-radius:3px; }
+table.modes a:hover canvas, table.modes a:focus-visible canvas { box-shadow:0 0 0 2px var(--accent); }
+table.check canvas { width:72px; height:72px; display:block; border-radius:3px; image-rendering:pixelated; }
+@media (max-width:860px) {
+  .sim, .heroplate { grid-template-columns:1fr; } .sim .controls { position:static; } .sim .view { order:-1; }
+  table.modes canvas { width:52px; height:52px; }
+}

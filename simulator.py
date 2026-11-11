@@ -37,6 +37,14 @@ from constants import (
 )
 from particle import Particle
 from pattern_generator import PatternGenerator
+from presets import (
+    DISPLAY_MODES,
+    FREQUENCY_PRESETS,
+    PATTERN_PRESETS,
+    SIZE_DISTRIBUTIONS,
+    amplitude_map,
+    pattern_function,
+)
 
 
 class ChladniSimulator:
@@ -58,7 +66,7 @@ class ChladniSimulator:
 
         # Display modes: 0=both, 1=particles only, 2=pattern only
         self.display_mode = 0
-        self.display_modes = ["Both", "Particles Only", "Pattern Only"]
+        self.display_modes = list(DISPLAY_MODES)
 
         # 3D visualization mode
         self.mode_3d = False
@@ -91,31 +99,14 @@ class ChladniSimulator:
         # Initialize particles
         self.init_particles()
 
-        # Pattern presets
+        # Pattern presets (keys Q-O) and frequency presets (musical notes,
+        # keys 1-0) are defined in presets.py, shared with the web app.
         self.pattern_presets = {
-            pygame.K_q: ("Classic Rectangular", PatternGenerator.classic_rectangular, 3, 2),
-            pygame.K_w: ("Circular Modes", PatternGenerator.circular_modes, 2, 3),
-            pygame.K_e: ("Interference", PatternGenerator.interference_pattern, 4, 3),
-            pygame.K_r: ("Radial Symmetric", PatternGenerator.radial_symmetric, 3, 2),
-            pygame.K_t: ("Spiral Pattern", PatternGenerator.spiral_pattern, 4, 6),
-            pygame.K_y: ("Diamond Pattern", PatternGenerator.diamond_pattern, 4, 3),
-            pygame.K_u: ("Flower Pattern", PatternGenerator.flower_pattern, 8, 2),
-            pygame.K_i: ("Wave Interference", PatternGenerator.wave_interference, 5, 3),
-            pygame.K_o: ("Complex Superposition", PatternGenerator.complex_superposition, 3, 4),
+            getattr(pygame, f"K_{key}"): (name, pattern_function(method), mx, my)
+            for key, _slug, name, method, mx, my in PATTERN_PRESETS
         }
-
-        # Frequency presets (musical notes)
         self.frequency_presets = {
-            pygame.K_1: 220.0,   # A3
-            pygame.K_2: 261.6,   # C4
-            pygame.K_3: 293.7,   # D4
-            pygame.K_4: 329.6,   # E4
-            pygame.K_5: 349.2,   # F4
-            pygame.K_6: 392.0,   # G4
-            pygame.K_7: 440.0,   # A4
-            pygame.K_8: 493.9,   # B4
-            pygame.K_9: 523.3,   # C5
-            pygame.K_0: 587.3,   # D5
+            getattr(pygame, f"K_{key}"): freq for key, freq, _note in FREQUENCY_PRESETS
         }
 
         self.clock = pygame.time.Clock()
@@ -179,16 +170,9 @@ class ChladniSimulator:
 
     def calculate_pattern(self) -> np.ndarray:
         """Calculate the amplitude pattern using the current generator."""
-        x = np.linspace(0, self.plate_size, self.grid_size)
-        y = np.linspace(0, self.plate_size, self.grid_size)
-        X, Y = np.meshgrid(x, y)
-
-        freq_factor = self.frequency / DEFAULT_FREQUENCY
-        pattern = self.current_pattern_func(X, Y, self.mode_x, self.mode_y, freq_factor)
-
-        pattern = np.abs(pattern)
-        pattern = pattern / (np.max(pattern) + 1e-10)
-        return pattern
+        return amplitude_map(self.current_pattern_func, self.grid_size,
+                             self.mode_x, self.mode_y, self.frequency,
+                             self.plate_size)
 
     # ------------------------------------------------------------------
     # Drawing helpers
@@ -479,7 +463,7 @@ class ChladniSimulator:
                 self.particle_size_max = max(1.0, self.particle_size_max - 0.2)
                 self.init_particles()
             elif key == pygame.K_d:
-                dists = ["uniform", "normal", "small", "large"]
+                dists = SIZE_DISTRIBUTIONS
                 idx = dists.index(self.particle_size_distribution)
                 self.particle_size_distribution = dists[(idx + 1) % len(dists)]
                 self.init_particles()
