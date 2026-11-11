@@ -126,7 +126,7 @@ class ChladniSimulator(View3DMixin):
         print("1-0 - Different frequencies/musical notes")
         print("\nDisplay Controls:")
         print("V - Cycle view modes (Both/Particles/Pattern)")
-        print("3 - Toggle 3D mode")
+        print("G - Toggle 3D mode")
         print("C - Cycle camera views (Perspective/Top/N/S/E/W)")
         print("Left/Right Arrow - Adjust perspective camera angle")
         print("Page Up/Down - Zoom in/out")
@@ -282,7 +282,7 @@ class ChladniSimulator(View3DMixin):
                 self.screen.blit(angle_text, (20, y_off))
 
         instructions = [
-            "Q-O: Patterns  |  1-0: Frequencies  |  3: Toggle 3D  |  C: Camera",
+            "Q-O: Patterns  |  1-0: Frequencies  |  G: Toggle 3D  |  C: Camera",
             "V: View mode  |  []: Particles  |  PgUp/Dn: Zoom",
             "<->: Camera angle  |  Shift+/-: Size  |  D: Distribution",
             "+/-: Speed  |  Up/Dn: Fine speed  |  SPACE: Reset  |  ESC: Quit",
@@ -314,7 +314,7 @@ class ChladniSimulator(View3DMixin):
                 return False
             elif key == pygame.K_SPACE:
                 self.init_particles()
-            elif key == pygame.K_3:
+            elif key == pygame.K_g:
                 self.mode_3d = not self.mode_3d
                 self.init_particles()
                 print(f"3D Mode: {'ON' if self.mode_3d else 'OFF'}")

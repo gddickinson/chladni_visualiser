@@ -24,3 +24,10 @@
 - New `test_main.py` (headless SDL dummy driver): --mode for all 9 patterns, unknown mode rejected, particle clamp,
   right Shift, 3-D drawing for every camera view. Repo tests 66 passed; tests/test_web.py 21 passed; static and server
   smoke tests ok (server check on port 8112 because 8102 was held by another run_web.py from this repo, left running).
+
+## 2026-11-11 -- 3D toggle moved from key 3 to G (approved by George)
+- Key 3 toggled 3D mode and shadowed the D4 (293.7 Hz) preset. The toggle is now G (T was taken by Spiral Pattern):
+  simulator.py binding, console help and on-screen hint, README controls, web About page. 3 selects D4 again.
+  The web visualiser never had a 3D toggle (its key 3 already selected D4).
+- Regression test `test_key_3_selects_d4_and_g_toggles_3d` in test_main.py (failed before the fix).
+- `chladni_visualizer.py` (original single-file version kept for reference) left unchanged.

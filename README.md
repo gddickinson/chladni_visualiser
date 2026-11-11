@@ -45,9 +45,9 @@ python main.py --mode flower --particles 5000   # start on another pattern
 | Key | Action |
 |-----|--------|
 | Q W E R T Y U I O | Pattern presets (classic ... superposition) |
-| 1 2 4 5 6 7 8 9 0 | Frequency presets / musical notes (A3 ... D5) |
+| 1 2 3 4 5 6 7 8 9 0 | Frequency presets / musical notes (A3 ... D5) |
 | V | Cycle view: both / particles only / pattern only |
-| 3 | Toggle 3D mode |
+| G | Toggle 3D mode |
 | C | Cycle 3D camera views; Left/Right: perspective angle; Page Up/Down: zoom |
 | [ ] | Fewer / more particles (up to 20,000) |
 | Shift + - / Shift + = | Particle size range |
@@ -55,8 +55,6 @@ python main.py --mode flower --particles 5000   # start on another pattern
 | + / - | Speed (Up/Down arrows: fine speed) |
 | Space | Reset particles |
 | Esc | Quit |
-
-Key 3 toggles 3D mode, so the D4 (293.7 Hz) frequency preset bound to it cannot be reached from the keyboard.
 
 ## How It Works
 

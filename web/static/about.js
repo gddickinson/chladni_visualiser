@@ -4,7 +4,7 @@ import { loadSetup } from './ui.js';
 
 const DESKTOP_KEYS = [ // simulator.print_instructions
   ['Q W E R T Y U I O', 'Pattern presets'], ['1 to 0', 'Frequencies / musical notes'], ['V', 'Cycle view: both, particles, pattern'],
-  ['3', 'Toggle 3D mode'], ['C', 'Cycle camera views (perspective, top, N/S/E/W)'], ['Left / Right', 'Perspective camera angle'],
+  ['G', 'Toggle 3D mode'], ['C', 'Cycle camera views (perspective, top, N/S/E/W)'], ['Left / Right', 'Perspective camera angle'],
   ['Page Up / Down', 'Zoom'], ['[ ]', 'Fewer / more particles (up to 20,000)'], ['Shift + - / Shift + =', 'Particle size range'],
   ['D', 'Cycle particle size distribution'], ['+ / -', 'Speed'], ['Up / Down', 'Fine speed adjustment'], ['Space', 'Reset particles'], ['Esc', 'Quit'],
 ];

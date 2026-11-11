@@ -66,3 +66,21 @@ def test_3d_view_draws_every_camera():
         sim.draw_particles()
         assert isinstance(sim.project_3d(10, 20, 5)[0], int)
     sim.draw_ui()
+
+
+def _press(sim, key):
+    pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=key, mod=0))
+    assert sim.handle_events()
+
+
+def test_key_3_selects_d4_and_g_toggles_3d():
+    """Regression: key 3 used to toggle 3D, shadowing the D4 preset; 3D is on G now."""
+    sim = _sim()
+    _press(sim, pygame.K_3)
+    assert sim.frequency == 293.7 and not sim.mode_3d
+    _press(sim, pygame.K_g)
+    assert sim.mode_3d
+    _press(sim, pygame.K_t)  # T is still the Spiral Pattern preset, not the 3D toggle
+    assert sim.current_pattern_name == "Spiral Pattern" and sim.mode_3d
+    _press(sim, pygame.K_g)
+    assert not sim.mode_3d
